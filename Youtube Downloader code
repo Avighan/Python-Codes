@@ -1,0 +1,71 @@
+from pytube import YouTube
+import urllib2
+import re
+from threading import Thread
+
+
+def dedupe(items):
+    seen = set()
+    for item in items:
+        if item not in seen:
+            yield item
+            seen.add(item)
+            
+            
+def getPlaylistLinks(url):
+    sTUBE = ''
+    cPL = ''
+    amp = 0
+    final_url = []
+
+    if 'list=' in url:
+        eq = url.rfind('=') + 1
+        cPL = url[eq:]
+
+    else:
+        print('Incorrect Playlist.')
+        exit(1)
+
+    try:
+        yTUBE = urllib2.urlopen(url).read()
+        sTUBE = str(yTUBE)
+    except urllib2.error.URLError as e:
+        print(e.reason)
+
+
+    tmp_mat = re.compile(r'watch\?v=\S+?list=' + cPL)
+    mat = re.findall(tmp_mat, sTUBE)
+
+    if mat:
+        for PL in mat:
+            yPL = str(PL)
+            if '&' in yPL:
+                yPL_amp = yPL.index('&')
+            #print 'http://www.youtube.com/' + yPL[:yPL_amp]
+            final_url.append('http://www.youtube.com/' + yPL[:yPL_amp])
+        i = 0
+    else:
+        print('No videos found.')
+        exit(1)
+    return final_url
+    
+    
+    
+    
+def download_videos(path,playlistLink):
+    value = getPlaylistLinks(playlistLink)#'https://www.youtube.com/watch?v=xyAuNHPsq-g&list=PLFD0EB975BA0CC1E0'
+    youtubeLinksTobeDownloaded = list(dedupe(value))
+    count = 1
+    for links in youtubeLinksTobeDownloaded:
+
+        if count > 101:
+            try:
+                yt = YouTube(links)
+                video = yt.get('mp4', '360p')
+                yt.set_filename(str(count-1) + '-' + yt.filename)
+                video.download(path)#'C:/My Folder/Linear Algebra Khans Academy/'
+            except :
+                pass
+        count += 1
+        
+Thread(target = download_videos(destination path,youtube playlist or video link)).start()
