@@ -1,7 +1,18 @@
 from pytube import YouTube
+import numpy as np
+from pprint import pprint
+import sys
+import os
 import urllib2
 import re
+import time
+from bs4 import BeautifulSoup
+import requests
+from multiprocessing import Process
+import threading
 from threading import Thread
+from os import listdir
+from os.path import isfile, join
 
 
 def dedupe(items):
@@ -10,8 +21,7 @@ def dedupe(items):
         if item not in seen:
             yield item
             seen.add(item)
-            
-            
+
 def getPlaylistLinks(url):
     sTUBE = ''
     cPL = ''
@@ -23,8 +33,7 @@ def getPlaylistLinks(url):
         cPL = url[eq:]
 
     else:
-        print('Incorrect Playlist.')
-        exit(1)
+        return 'Incorrect Playlist.'
 
     try:
         yTUBE = urllib2.urlopen(url).read()
@@ -37,35 +46,74 @@ def getPlaylistLinks(url):
     mat = re.findall(tmp_mat, sTUBE)
 
     if mat:
+
         for PL in mat:
             yPL = str(PL)
             if '&' in yPL:
                 yPL_amp = yPL.index('&')
-            #print 'http://www.youtube.com/' + yPL[:yPL_amp]
             final_url.append('http://www.youtube.com/' + yPL[:yPL_amp])
         i = 0
     else:
-        print('No videos found.')
-        exit(1)
+        return 'No videos found'
     return final_url
-    
-    
-    
-    
-def download_videos(path,playlistLink):
-    value = getPlaylistLinks(playlistLink)#'https://www.youtube.com/watch?v=xyAuNHPsq-g&list=PLFD0EB975BA0CC1E0'
-    youtubeLinksTobeDownloaded = list(dedupe(value))
-    count = 1
-    for links in youtubeLinksTobeDownloaded:
 
-        if count > 101:
+def check_exists(MainList,Checkval):
+    for item in MainList:
+        if Checkval in item:
+            return True
+
+def download_videos(path,playlistLink):
+    files = getFilesinDir(path)
+    value = getPlaylistLinks(playlistLink)
+    if value != 'Incorrect Playlist.':
+        youtubeLinksTobeDownloaded = list(dedupe(value))
+        count = 0
+        for links in youtubeLinksTobeDownloaded:
+
+
+
             try:
                 yt = YouTube(links)
-                video = yt.get('mp4', '360p')
-                yt.set_filename(str(count-1) + '-' + yt.filename)
-                video.download(path)#'C:/My Folder/Linear Algebra Khans Academy/'
+                getFiles = getFilesinDir(path)
+                
+                print check_exists(getFiles, yt.filename)
+                
+                if check_exists(getFiles, yt.filename) == False or check_exists(getFiles, yt.filename) == None:
+                    
+                    print links
+                    video = yt.get('mp4', '360p')
+                    print yt.video_id,yt.filename
+                    yt.set_filename(str(count+1) + '-' + yt.filename)
+                    video.download(path)
             except :
+                    #print(e.reason)
                 pass
-        count += 1
-        
-Thread(target = download_videos(destination path,youtube playlist or video link)).start()
+                #sys.exit()
+            count += 1
+    else:
+        print 'Downloading'
+        yt = YouTube(playlistLink)
+        video = yt.get('mp4', '360p')
+        yt.set_filename(yt.filename)
+        video.download(path)
+
+
+
+def getFilesinDir(path):
+    return os.listdir(path)
+
+t1 = Thread(target = download_videos,args =(destination folder,youtube playlist or video link))
+t2 = Thread(target = download_videos, args = (destination folder,youtube playlist or video link))
+t3 = Thread(target = download_videos, args = (destination folder,youtube playlist or video link))
+t4 = Thread(target = download_videos, args = (destination folder,youtube playlist or video link))
+t5 = Thread(target = download_videos, args = (destination folder,youtube playlist or video link))
+t6 = Thread(target = download_videos, args = (destination folder,youtube playlist or video link))
+t7 = Thread(target = download_videos, args = (destination folder,youtube playlist or video link))
+
+t1.start()
+t2.start()
+t3.start()
+t4.start()
+t5.start()
+t6.start()
+t7.start()
